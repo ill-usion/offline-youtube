@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/offlineyt.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/index.css') }}">
+    <script src="{{ url_for('static', filename='scripts/index.js') }}" defer></script>
+    <title>Offline Youtube</title>
+    <style>
+        @font-face {
+            font-family: Belanosima;
+            src: url("{{ url_for('static', filename='fonts/Belanosima.ttf') }}");
+        }
+    </style>
+</head>
+
+<body>
+    <main id="main-container">
+        <form id="dl-container" method="post">
+            <h1>Download a YouTube Video</h1>
+            <input type="url" name="video-url" id="video-url" placeholder="Video URL..." required>
+            <select name="resolution" id="resolution" disabled>
+                <option value="">Enter a video URL to see the available resolutions</option>
+            </select>
+            <label for="subtitles">
+                <input type="checkbox" name="subtitles" id="subtitles" checked>
+                Subtitles
+            </label>
+            <div class="options">
+                <input type="submit" value="Download" id="download" disabled>
+                or
+                <a href="/watch">Watch</a>
+            </div>
+        </form>
+    </main>
+</body>
+
+</html>

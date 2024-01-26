@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/offlineyt.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/watch.css') }}">
+    <script src="{{ url_for('static', filename='scripts/watch.js') }}" defer></script>
+    <title>Offline Youtube | Watch</title>
+    <style>
+        @font-face {
+            font-family: Belanosima;
+            src: url("{{ url_for('static', filename='fonts/Belanosima.ttf') }}");
+        }
+    </style>
+</head>
+
+<body>
+    <main id="main-container">
+        <div id="menu">
+            <a href="/">🏠</a>
+            <a href="/watch">🎥</a>
+            <span id="toggle-list">📃</span>
+        </div>
+        <div id="videos-list">
+            <input type="text" id="search" placeholder="Search ({{videos|length}})...">
+            <label for="filter-unwatched">
+                <input type="checkbox" name="filter-unwatched" id="filter-unwatched">
+                Unwatched
+            </label>
+            {% for vid in videos %}
+            <div class="list-video">
+                <img src="{{ url_for('static', filename='videos/'+vid['id']+'/thumbnail.jpg') }}" alt="thumbnail">
+                <h2>
+                    <a href="/watch?video={{vid['id']}}" class="status-{{ vid['metadata']['status'] }}
+                            {% if video != None %}
+                                {{'selected-video' if video['id'] == vid['id'] else '' }}
+                            {% endif %}
+                            ">
+                        {{ vid['metadata']['title'] }}
+                        {% if vid['metadata']['status'] == 'downloading' %}
+                        <span>| {{vid['metadata']['progress']}}%</span>
+                        {% endif %}
+                    </a>
+                </h2>
+                <div>
+                    <span>{{ vid['metadata']['channel'] }}</span>
+                    &nbsp;|&nbsp;
+                    <span>{{ vid['metadata']['duration_timestamp'] }}</span>
+                    &nbsp;|&nbsp;
+                    {% set resolutions_map = {
+                    'Default': 'HD',
+                    '2160p': '4K',
+                    '1440p': '2K',
+                    '1080p': 'FHD',
+                    '720p': 'HD',
+                    '480p': 'SD (480p)',
+                    '360p': 'SD (360p)',
+                    '240p': 'SD (240p)',
+                    '144p': 'SD (144p)',
+                    } %}
+                    <span><b>{{ resolutions_map[vid['metadata']['resolution']] }}</b></span>
+                    <div>
+                        <span class="delete-icon icon" onclick="deleteVideo('{{ vid['id'] }}')" title="delete"></span>
+                        <a href="https://youtu.be/{{ vid['id'] }}" target="_blank" class="icon original-icon"
+                        title="view original"></a>
+                        <span class="watch-status icon"
+                        title="{{'watched' if vid['metadata']['is_watched'] else 'not watched' }}">{{ '✅' if
+                        vid['metadata']['is_watched'] else '☑️' }}</span>
+                        {% if vid['metadata']['has_subtitles'] %}
+                        <span class="icon" title="subtitles">📜</span>
+                        {% endif %}
+                        <span title="{{ vid['metadata']['date_downloaded'] }}" class="icon">💾</span>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <div id="video-content">
+            {% if video != None %}
+            <video src="{{ url_for('static', filename='videos/'+video['id']+'/video.mp4') }}" 
+                controls 
+                autoplay
+                poster="{{ url_for('static', filename='videos/'+video['id']+'/thumbnail.jpg') }}"
+                id="video">
+                {% if video['metadata']['has_subtitles'] %}
+                <track src="{{ url_for('static', filename='videos/'+video['id']+'/subtitles_en.vtt') }}"
+                    kind="subtitles" srclang="en" label="English" default />
+                {% endif %}
+            </video>
+            <div id="video-meta">
+                <div>
+                    <h2 id="video-title">{{ video['metadata']['title'] }}</h2>
+                    <label for="video-watched" id="video-watched-label">
+                        <input type="checkbox" name="video-watched" id="video-watched" {{ 'checked' if
+                            video['metadata']['is_watched'] else '' }} onchange="toggleWatched('{{ video['id'] }}')">
+                        Mark as watched
+                    </label>
+                </div>
+                <span id="video-channel-name">{{ video['metadata']['channel'] }}</span>
+                <span>
+                    Duration:
+                    <span id="video-duration">{{ video['metadata']['duration_timestamp'] }}</span>
+                </span>
+                <span>
+                    Date Downloaded:
+                    <span id="video-save-date">{{ video['metadata']['date_downloaded'] }}</span>
+                </span>
+            </div>
+            {% endif %}
+        </div>
+    </main>
+</body>
+
+</html>

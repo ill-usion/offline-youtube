@@ -1,0 +1,120 @@
+:root {
+	--ytro-bg: #333333;
+	--ytro-accent: #6f70b2;
+	--ytro-text: #bebebe;
+	--ytro-secondary: #454545;
+}
+
+/* width */
+::-webkit-scrollbar {
+	width: 6px;
+	height: 6px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+	background: transparent;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+	background: #888;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+	background: #555;
+}
+
+* {
+	font-family: Belanosima, monospace;
+}
+
+body,
+html {
+	height: 100%;
+	margin: 0;
+	padding: 0;
+	color: var(--ytro-text);
+	background-color: var(--ytro-bg);
+}
+
+.icon {
+	float: right;
+	border-radius: 3px;
+	padding: 3px;
+	text-decoration: none;
+}
+
+.delete-icon:hover,
+.original-icon:hover,
+.download-icon:hover {
+	background-color: var(--ytro-accent);
+}
+
+.delete-icon::before {
+	content: "🗑️";
+}
+
+.original-icon::before {
+	content: "🌐";
+}
+
+.download-icon::before {
+	content: "⬇️";
+}
+
+.status-downloading {
+	pointer-events: none;
+	text-decoration: none !important;
+	color: #d1d100 !important;
+}
+
+.selected-video {
+	color: var(--ytro-accent) !important;
+}
+
+.status-processing {
+	text-decoration: none !important;
+	pointer-events: none;
+	animation: blink 3s linear infinite;
+	color: #d1d100 !important;
+}
+
+@keyframes blink {
+	50% {
+		opacity: 0;
+	}
+}
+
+.thumbnail-container {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: black;
+}
+
+.thumbnail,
+.vid-preview {
+    width: 100%;
+
+    display: block;
+    margin: 0 auto;
+}
+
+.vid-preview {
+	position: absolute;
+	top: 0;
+	left: 0;
+	opacity: 0;
+	transition: opacity 0.3s;
+}
+
+.thumbnail-container:hover .thumbnail {
+	opacity: 0;
+}
+
+.thumbnail-container:hover .vid-preview {
+	opacity: 1;
+}

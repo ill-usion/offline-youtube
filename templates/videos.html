@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/offlineyt.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/videos.css') }}">
+    <script src="{{ url_for('static', filename='scripts/thumbnail.js') }}" defer></script>
+    <title>Offline Youtube | Videos</title>
+</head>
+
+<body>
+    <main>
+        <div id="controls">
+            <h1><a href="/" style="text-decoration: none;">🏠</a></h1>
+            <input type="text" id="search" placeholder="Search ({{videos|length}} videos, {{ total_size }})...">
+            <label for="filter-unwatched">
+                <input type="checkbox" name="filter-unwatched" id="filter-unwatched">
+                Unwatched
+            </label>
+        </div>
+        <div id="videos-list">
+            {% for vid in videos %}
+            <div class="list-video">
+                {% if vid['metadata']['has_preview'] %}
+                <div class="thumbnail-container">
+                    <img class="thumbnail" src="{{ url_for('static', filename='videos/'+vid['id']+'/thumbnail.jpg') }}"
+                        alt="thumbnail" loading="lazy">
+
+                    <video class="vid-preview" muted loop src="{{ url_for('static', filename='videos/'+vid['id']+'/preview.mp4') }}"></video>
+                </div>
+                {% else %}
+                <img src="{{ url_for('static', filename='videos/'+vid['id']+'/thumbnail.jpg') }}" alt="thumbnail"
+                    loading="lazy">
+                {% endif %}
+                <h2>
+                    <a href="/watch?video={{vid['id']}}" class="status-{{ vid['metadata']['status'] }}">
+                        {{ vid['metadata']['title'] }}
+                        {% if vid['metadata']['status'] == 'downloading' %}
+                        <span>| {{vid['metadata']['progress']}}%</span>
+                        {% endif %}
+                    </a>
+                </h2>
+                <div>
+                    <span>{{ vid['metadata']['channel'] }}</span>
+                    &nbsp;|&nbsp;
+                    <span>{{ vid['metadata']['duration_timestamp'] }}</span>
+                    &nbsp;|&nbsp;
+                    {% set resolutions_map = {
+                    'Default': 'HD',
+                    '2160p': '4K',
+                    '1440p': '2K',
+                    '1080p': 'FHD',
+                    '720p': 'HD',
+                    '480p': 'SD (480p)',
+                    '360p': 'SD (360p)',
+                    '240p': 'SD (240p)',
+                    '144p': 'SD (144p)',
+                    } %}
+                    <span><b>{{ resolutions_map[vid['metadata']['resolution']] }}</b></span>
+                    <div>
+                        <!-- <a class="download-icon icon" title="download" download="name.mp4"
+                            href="{{ url_for('static', filename='videos/'+vid['id']+'/video.mp4') }}"></a> -->
+                        <span class="delete-icon icon" onclick="deleteVideo('{{ vid['id'] }}')" title="delete"></span>
+                        <a href="https://youtu.be/{{ vid['id'] }}" target="_blank" class="icon original-icon"
+                            title="view original"></a>
+                        <span class="watch-status icon"
+                            title="{{'watched' if vid['metadata']['is_watched'] else 'not watched' }}">{{ '✅' if
+                            vid['metadata']['is_watched'] else '☑️' }}</span>
+                        {% if vid['metadata']['has_subtitles'] %}
+                        <span class="icon" title="subtitles">📜</span>
+                        {% endif %}
+                        <span class="icon" title="{{ vid['metadata']['date_downloaded'] }}">💾</span>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </main>
+</body>
+<script>
+    const searchInput = document.getElementById('search');
+    const listVideos = document.getElementsByClassName('list-video');
+    const filterUnatchedCheckbox = document.getElementById('filter-unwatched');
+
+    searchInput.addEventListener('input', () => {
+        const searchTerm = searchInput.value.toLowerCase();
+
+        for (let i = 0; i < listVideos.length; i++) {
+            const videoTitle = listVideos[i].querySelector('h2').textContent.toLowerCase();
+
+            if (videoTitle.includes(searchTerm)) {
+                listVideos[i].style.display = 'block';
+            } else {
+                listVideos[i].style.display = 'none';
+            }
+        }
+    });
+
+    filterUnatchedCheckbox.addEventListener('input', () => {
+        for (let i = 0; i < listVideos.length; i++) {
+            if (filterUnatchedCheckbox.checked) {
+                const videoWatched = listVideos[i].querySelector('.watch-status').textContent !== '✅';
+
+                if (videoWatched) {
+                    listVideos[i].style.display = 'block';
+                } else {
+                    listVideos[i].style.display = 'none';
+                }
+            }
+            else {
+                listVideos[i].style.display = 'block';
+            }
+        }
+    });
+
+    function deleteVideo(id) {
+        fetch(`/api/video/${id}`, {
+            method: 'delete'
+        })
+            .then(res => {
+                if (res.ok) {
+                    window.location.href = '/watch';
+                }
+                else {
+                    res.text()
+                        .then(text => {
+                            alert('Error deleting video: ' + text);
+                        });
+                }
+            })
+            .catch(err => alert('Error deleting video: ' + err));
+    }
+</script>
+
+</html>
